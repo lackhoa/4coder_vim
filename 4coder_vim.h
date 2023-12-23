@@ -1,3 +1,7 @@
+#pragma once
+
+#include "4coder_vim_base_types.h"
+#include "4coder_vimrc.h"
 
 global Vim_State vim_state;
 global Table_u64_u64 vim_maps[VIM_MODE_COUNT*VIM_SUBMODE_COUNT];
@@ -100,6 +104,10 @@ function void vim_reset_state(){
 	vim_default_register();
 }
 
+/// If you _really_ want to change dynamic register allocation, go for it
+#ifndef VIM_GROW_RATE
+#define VIM_GROW_RATE(S) (Max(u64(128), u64(1.5*(S))))
+#endif
 
 function b32
 vim_realloc_string(String_u8 *src, u64 size){

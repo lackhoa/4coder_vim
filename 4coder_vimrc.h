@@ -1,28 +1,38 @@
+#pragma once
 
-// EXAMPLE 4coder_vimrc.h
+CUSTOM_ID(colors, defcolor_vim_filebar_pop);
+CUSTOM_ID(colors, defcolor_vim_chord_text);
+CUSTOM_ID(colors, defcolor_vim_chord_unresolved);
+CUSTOM_ID(colors, defcolor_vim_chord_error);
 
 #define VIM_DO_ANIMATE                 1
-#define VIM_USE_TRADITIONAL_CHORDS     1
-#define VIM_USE_REIGSTER_BUFFER 1
+#define VIM_USE_TRADITIONAL_CHORDS     0
+#define VIM_USE_REIGSTER_BUFFER        1
 
-enum EXAMPLE_Vim_Request{
-	EXAMPLE_REQUEST_Title,
-	EXAMPLE_REQUEST_Rot13,
+enum BYP_Vim_Request{
+	BYP_REQUEST_Title,
+	BYP_REQUEST_Comment,
+	BYP_REQUEST_UnComment,
 
-	EXAMPLE_REQUEST_COUNT
+	BYP_REQUEST_COUNT
 };
 
-enum EXAMPLE_Vim_Objects{
-	EXAMPLE_OBJECT_camel,
+enum BYP_Vim_Objects{
+	BYP_OBJECT_param0,
+	BYP_OBJECT_param1,
+	BYP_OBJECT_camel0,
+	BYP_OBJECT_camel1,
 
-	EXAMPLE_OBJECT_COUNT
+	BYP_OBJECT_COUNT
 };
-#define VIM_ADDITIONAL_REQUESTS        EXAMPLE_REQUEST_COUNT
-#define VIM_ADDITIONAL_TEXT_OBJECTS    EXAMPLE_OBJECT_COUNT
-#define VIM_ADDITIONAL_PEEK            0
+
+#define VIM_ADDITIONAL_REQUESTS        BYP_REQUEST_COUNT
+#define VIM_ADDITIONAL_TEXT_OBJECTS    BYP_OBJECT_COUNT
+
+#define VIM_ADDITIONAL_PEEK            2
 
 #define VIM_DEFAULT_REGISTER           unnamed
 
 #define VIM_USE_BOTTOM_LISTER          1
 #define VIM_LISTER_RANGE               3,5
-#define VIM_LISTER_MAX_RATIO           0.35f
+#define VIM_LISTER_MAX_RATIO           0.55f

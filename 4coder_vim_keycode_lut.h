@@ -1,3 +1,4 @@
+#include "4coder_default_include.cpp"
 
 global char* keycode_lut[2*KeyCode_COUNT];
 

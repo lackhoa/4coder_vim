@@ -1,14 +1,25 @@
+#pragma once
+
+#include "4coder_vim.h"
 
 // TODO(BYP): Might want meta-data on these, for now I prefer the simplicity
-function void vim_map_set_binding(u32 mode, u32 sub_mode, void *func, u64 key){
-	if((mode & bitmask_3) == 0){
-		mode |= bitmask_3;
-		foreach(s,VIM_SUBMODE_COUNT){ vim_map_set_binding(mode, s, func, key); }
-	}
-	if(mode & bit_1){ table_insert(vim_maps + 0 + sub_mode*VIM_MODE_COUNT, key, PtrAsInt(func)); }
-	if(mode & bit_2){ table_insert(vim_maps + 1 + sub_mode*VIM_MODE_COUNT, key, PtrAsInt(func)); }
-	if(mode & bit_3){ table_insert(vim_maps + 2 + sub_mode*VIM_MODE_COUNT, key, PtrAsInt(func)); }
+function void vim_map_set_binding(u32 mode, u32 sub_mode, void *func, u64 key) {
+  if ((mode & bitmask_3) == 0) {
+    // set everything
+    mode |= bitmask_3;
+    foreach(s,VIM_SUBMODE_COUNT) {
+      vim_map_set_binding(mode, s, func, key);
+    }
+  } else {
+    for (i32 mode_index=0; mode_index < 3; mode_index++) {
+      if (mode & (1 << mode_index)) {
+        b32 result = table_insert(vim_maps + mode_index + sub_mode*VIM_MODE_COUNT, key, PtrAsInt(func));
+        AssertAlways(result);  // vim key defined twice
+      }
+    }
+  }
 }
+
 function void VimBind(u32 mode, Custom_Command_Function *custom, Vim_Sub_Mode sub_mode, u64 key){
 	vim_map_set_binding(mode, sub_mode, (void *)custom, key);
 }
@@ -16,7 +27,7 @@ function void VimBind(u32 mode, Custom_Command_Function *custom, u64 key){
 	vim_map_set_binding(mode, SUB_None, (void *)custom, key);
 }
 
-
+/*
 function void vim_default_bindings(Application_Links *app, Key_Code leader){
 
 	// Normal, Insert, Visual
@@ -210,3 +221,4 @@ function void vim_default_bindings(Application_Links *app, Key_Code leader){
 #undef V
 #undef MAP
 }
+*/

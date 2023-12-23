@@ -1,3 +1,6 @@
+#pragma once
+
+#include "4coder_vim_block.cpp"
 
 CUSTOM_COMMAND_SIG(no_op)
 CUSTOM_DOC("no op for binding keybinds to resolve without side effect")

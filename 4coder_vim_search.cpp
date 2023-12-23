@@ -1,3 +1,7 @@
+#pragma once
+
+#include "4coder_vim_registers.cpp"
+#include "4coder_vim_lister.cpp"
 
 function i64 vim_pattern_inner_v(Application_Links *app, Buffer_Seek_String_Flags seek_flags){
 	String_u8 *pattern = &vim_registers.search.data;

@@ -1,3 +1,4 @@
+#include "4coder_vim_lister.cpp"
 
 function void
 vim__fill_command_lister(Arena *arena, Lister *lister, i32 *command_ids, i32 command_id_count, Command_Lister_Status_Rule *status_rule){

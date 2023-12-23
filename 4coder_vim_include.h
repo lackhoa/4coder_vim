@@ -1,3 +1,6 @@
+#pragma once
+
+#include "4coder_default_include.cpp"
 
 //// Author(BYP)
 //
@@ -11,10 +14,7 @@
 //
 ///////////////////////////////////
 
-CUSTOM_ID(colors, defcolor_vim_filebar_pop);
-CUSTOM_ID(colors, defcolor_vim_chord_text);
-CUSTOM_ID(colors, defcolor_vim_chord_unresolved);
-CUSTOM_ID(colors, defcolor_vim_chord_error);
+#include "4coder_vimrc.h"
 
 // [0,1]
 #ifndef VIM_DO_ANIMATE
@@ -67,28 +67,8 @@ CUSTOM_ID(colors, defcolor_vim_chord_error);
 #endif
 
 
-/// If you _really_ want to change dynamic register allocation, go for it
-#ifndef VIM_GROW_RATE
-#define VIM_GROW_RATE(S) (Max(u64(128), u64(1.5*(S))))
-#endif
-
-#include "4coder_vim_keycode_lut.h"
-#include "4coder_vim_base_types.h"
-#include "4coder_vim.h"
-
-#include "4coder_vim_block.cpp"
-#include "4coder_vim_helper.cpp"
-#include "4coder_vim_registers.cpp"
-#include "4coder_vim_movement.cpp"
-
-#include "4coder_vim_lister.cpp"
-#include "4coder_vim_lists.cpp"
-#include "4coder_vim_search.cpp"
-
-#include "4coder_folds.hpp"
-#include "4coder_vim_commands.cpp"
-#include "4coder_vim_bindings.cpp"
 #include "4coder_vim.cpp"
-
+#include "4coder_vim_search.cpp"
+#include "4coder_vim_bindings.cpp"
 #include "4coder_vim_draw.cpp"
 #include "4coder_vim_hooks.cpp"

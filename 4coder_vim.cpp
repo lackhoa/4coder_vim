@@ -1,3 +1,9 @@
+#pragma once
+
+#include "4coder_vim_registers.cpp"
+#include "4coder_folds.hpp"
+#include "4coder_vim_keycode_lut.h"
+#include "4coder_vim_commands.cpp"
 
 VIM_REQUEST_SIG(vim_apply_none){}
 VIM_REQUEST_SIG(vim_apply_yank){

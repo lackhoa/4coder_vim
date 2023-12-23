@@ -1,3 +1,4 @@
+#include "4coder_vim_helper.cpp"
 
 VIM_COMMAND_SIG(vim_begin_line){
 	Vim_Motion_Block vim_motion_block(app);

@@ -1,3 +1,6 @@
+#pragma once
+
+#include "4coder_vim.h"
 
 // TODO(BYP): Clean this up a bit more
 function String_Const_u8

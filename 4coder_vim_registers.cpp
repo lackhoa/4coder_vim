@@ -1,4 +1,6 @@
+#pragma once
 
+#include "4coder_vim_helper.cpp"
 #include "calc.hpp"
 
 function void

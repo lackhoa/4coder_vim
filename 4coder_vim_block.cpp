@@ -1,3 +1,7 @@
+#pragma once
+
+#include "4coder_vim.h"
+#include "4coder_vim_registers.cpp"
 
 function Rect_f32
 vim_get_rel_block_rect(Application_Links *app, View_ID view, Buffer_ID buffer, Range_i64 range, i64 line){

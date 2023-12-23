@@ -1,4 +1,5 @@
-
+#include "4coder_vim_movement.cpp"
+#include "4coder_vim_lists.cpp"
 
 CUSTOM_COMMAND_SIG(vim_toggle_relative_line_num)
 CUSTOM_DOC("Toggles relative line numbers")

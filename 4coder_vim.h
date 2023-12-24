@@ -49,6 +49,7 @@ function Rect_f32 vim_get_bottom_rect(Application_Links *app){
 	return result;
 }
 
+global u8 vim_quail_keys_rolling_buffer[16];
 
 struct Vim_Buffer_Peek_Entry{
 	Buffer_Identifier buffer_id;
@@ -102,6 +103,7 @@ function void vim_reset_state(){
 	vim_state.params = {};
 	vim_state.params.seek = seek;
 	vim_default_register();
+    block_zero_array(vim_quail_keys_rolling_buffer);
 }
 
 /// If you _really_ want to change dynamic register allocation, go for it

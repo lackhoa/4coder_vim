@@ -111,7 +111,7 @@ struct Vim_Params{
 	Custom_Command_Function *command;
 };
 
-struct Vim_State{
+struct Vim_State {
 	Vim_Mode mode;
 	Vim_Sub_Mode sub_mode;
 

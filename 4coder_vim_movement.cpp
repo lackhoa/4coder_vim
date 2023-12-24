@@ -16,7 +16,8 @@ VIM_COMMAND_SIG(vim_end_line){
 	Buffer_ID buffer = view_get_buffer(app, view, Access_ReadVisible);
 	i64 pos = view_get_cursor_pos(app, view);
 	i64 new_pos = get_line_side_pos_from_pos(app, buffer, pos, Side_Max);
-	if(vim_state.params.request == REQUEST_Change){
+	// if(vim_state.params.request == REQUEST_Change)
+    {
 		new_pos -= (buffer_get_char(app, buffer, new_pos) == '\n');
 	}
 	view_set_cursor_and_preferred_x(app, view, seek_pos(new_pos));

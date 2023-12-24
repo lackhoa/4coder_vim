@@ -318,81 +318,155 @@ function void vim_append_keycode(Key_Code code){
 #endif
 }
 
+String_Const_u8 *vim_quail_keys;
+String_Const_u8 *vim_quail_values;
+i32              vim_quail_count;
 
 function b32
-vim_handle_input(Application_Links *app, Input_Event *event){
-	switch(vim_state.mode){
-		case VIM_Replace:       return vim_handle_replace_mode(app, event);
-		case VIM_Visual_Insert: return vim_handle_visual_insert_mode(app, event);
-	}
+vim_handle_keyboard_input(Application_Links *app, Input_Event *event)
+{
+  if (vim_state.mode == VIM_Replace)
+  {
+    return vim_handle_replace_mode(app, event);
+  }
+  else if (vim_state.mode == VIM_Replace)
+  {
+    return vim_handle_visual_insert_mode(app, event);
+  }
+  else if (event->kind == InputEventKind_TextInsert)
+  {
+    // NOTE(kv): quail
+    String_Const_u8 in_string = to_writable(event);
 
+    if ((vim_state.mode == VIM_Insert) &&
+        (in_string.size == 1))
+    {
+      b32 substituted = false;
 
-	bool result = false;
-	if(event->kind == InputEventKind_KeyStroke){
+      u8  *quail_buffer = vim_quail_keys_rolling_buffer;
+      i32  quail_maxlen = ArrayCount(vim_quail_keys_rolling_buffer);
 
-		/// Translate the KeyCode
-		Key_Code code = event->key.code;
-		if(code != KeyCode_Control && code != KeyCode_Shift && code != KeyCode_Alt && code != KeyCode_Command && code != KeyCode_Menu){
-			if(vim_state.chord_resolved){ vim_keystroke_text.size=0; vim_state.chord_resolved=false; }
-			foreach(i, event->key.modifiers.count){
-				Key_Code mod = event->key.modifiers.mods[i];
-				if(0){}
-				else if(mod == KeyCode_Control){ code |= KeyMod_Ctl; }
-				else if(mod == KeyCode_Shift){   code |= KeyMod_Sft; }
-				else if(mod == KeyCode_Alt){     code |= KeyMod_Alt; }
-				else if(mod == KeyCode_Command){ code |= KeyMod_Cmd; }
-				else if(mod == KeyCode_Menu){    code |= KeyMod_Mnu; }
-			}
-		}else{
-			return true;
-		}
+      // NOTE(kv): update rolling buffer
+      u8 character = in_string.str[0];
+      for (i32 index=0; index < quail_maxlen - 1; index++)
+      {
+        quail_buffer[index] = quail_buffer[index+1];
+      }
+      quail_buffer[quail_maxlen - 1] = character;
 
-		b32 was_in_sub_mode = (vim_state.sub_mode != SUB_None);
-		u64 function_data=0;
-		if(table_read(vim_maps + vim_state.mode + vim_state.sub_mode*VIM_MODE_COUNT, code, &function_data)){
-			Custom_Command_Function *vim_func = (Custom_Command_Function *)IntAsPtr(function_data);
-			if(vim_func){
-				// Pre command stuff
-				View_ID view = get_active_view(app, Access_ReadVisible);
-				Managed_Scope scope = view_get_managed_scope(app, view);
-				default_pre_command(app, scope);
-				vim_pre_keystroke_size = vim_keystroke_text.size;
-				vim_append_keycode(code);
-				vim_state.active_command = vim_func;
-				vim_state.chord_resolved = true;
-				if(vim_func == no_op){ vim_state.chord_resolved = bitmask_2; }
+      View_ID   view   = get_active_view(app, Access_ReadVisible);
+      Buffer_ID buffer = view_get_buffer(app, view, Access_ReadVisible);
+      //
+      for (i32 quail_index=0;
+           (quail_index < vim_quail_count) && (!substituted);
+           quail_index++)
+      {
+        String_Const_u8 key = vim_quail_keys[quail_index];
+        AssertAlways(key.size < quail_maxlen);
+        //
+        String_Const_u8 inserted = SCu8(quail_buffer + (quail_maxlen - key.size), key.size);
+        if (string_compare(inserted, key) == 0)
+        {
+          i64 pos = view_get_cursor_pos(app, view) - (key.size-1);
+          auto range = Range_i64{pos, pos + (i64)(key.size-1)};
+          String_Const_u8 value = vim_quail_values[quail_index];
+          buffer_replace_range(app, buffer, range, value);
+          // NOTE(kv): It's not documented where the cursor ends up after "buffer_replace_range"
+          move_horizontal_lines(app, value.size);
+          block_zero_array(vim_quail_keys_rolling_buffer);
+          substituted = true;
+        }
+      }
 
-				vim_func(app);
+      return substituted;
+    }
+    else
+    {
+      return false;
+    }
+  }
+  else if (event->kind == InputEventKind_KeyStroke)
+  {
+    Key_Code code = event->key.code;
+    if (code == KeyCode_Control ||
+        code == KeyCode_Shift   ||
+        code == KeyCode_Alt     ||
+        code == KeyCode_Command ||
+        code == KeyCode_Menu)
+    {
+      return false;
+    }
 
-				// Post command stuff
-				default_post_command(app, scope);
-				vim_state.active_command = 0;
+    bool handled = false;
 
-				result = true;
-			}
-		}else{
-			if(vim_state.mode != VIM_Insert){
-				String_ID map_id = vars_save_string_lit("keys_global");
-				Command_Binding command_binding = map_get_binding_non_recursive(&framework_mapping, map_id, event);
-				if(command_binding.custom){
-					vim_reset_state();
-					command_binding.custom(app);
-					vim_keystroke_text.size = 0;
-				}else{
-					vim_append_keycode(code);
-					vim_state.chord_resolved = bitmask_2;
-				}
-				result = true;
-			}
-		}
-		if(was_in_sub_mode){ vim_state.sub_mode = SUB_None; }
+    /// Translate the KeyCode
+    if (vim_state.chord_resolved) { vim_keystroke_text.size=0; vim_state.chord_resolved=false; }
+    foreach(i, event->key.modifiers.count)
+    {
+      Key_Code mod = event->key.modifiers.mods[i];
+      if(0){}
+      else if(mod == KeyCode_Control){ code |= KeyMod_Ctl; }
+      else if(mod == KeyCode_Shift){   code |= KeyMod_Sft; }
+      else if(mod == KeyCode_Alt){     code |= KeyMod_Alt; }
+      else if(mod == KeyCode_Command){ code |= KeyMod_Cmd; }
+      else if(mod == KeyCode_Menu){    code |= KeyMod_Mnu; }
+    }
 
-		if(vim_keystroke_text.size >= vim_keystroke_text.cap){ vim_keystroke_text.size = 0; }
+    b32 was_in_sub_mode = (vim_state.sub_mode != SUB_None);
+    u64 function_data=0;
+    if (table_read(vim_maps + vim_state.mode + vim_state.sub_mode*VIM_MODE_COUNT, code, &function_data))
+    {
+      Custom_Command_Function *vim_func = (Custom_Command_Function *)IntAsPtr(function_data);
+      if(vim_func) {
+        // Pre command stuff
+        View_ID view = get_active_view(app, Access_ReadVisible);
+        Managed_Scope scope = view_get_managed_scope(app, view);
+        default_pre_command(app, scope);
+        vim_pre_keystroke_size = vim_keystroke_text.size;
+        vim_append_keycode(code);
+        vim_state.active_command = vim_func;
+        vim_state.chord_resolved = true;
+        if(vim_func == no_op){ vim_state.chord_resolved = bitmask_2; }
 
-		return result;
-	}
+        vim_func(app);
 
-	return false;
+        // Post command stuff
+        default_post_command(app, scope);
+        vim_state.active_command = 0;
+
+        handled = true;
+      }
+    }
+    else if (vim_state.mode == VIM_Insert)
+    {
+      // passthrough
+    }
+    else 
+    {
+      // todo(kv): don't know what this does?
+      String_ID map_id = vars_save_string_lit("keys_global");
+      Command_Binding command_binding = map_get_binding_non_recursive(&framework_mapping, map_id, event);
+      if (command_binding.custom) {
+        vim_reset_state();
+        command_binding.custom(app);
+        vim_keystroke_text.size = 0;
+      } else {
+        vim_append_keycode(code);
+        vim_state.chord_resolved = bitmask_2;
+      }
+      handled = true;
+    }
+
+    if(was_in_sub_mode){ vim_state.sub_mode = SUB_None; }
+
+    if(vim_keystroke_text.size >= vim_keystroke_text.cap){ vim_keystroke_text.size = 0; }
+
+    return handled;
+  }
+  else
+  {
+    return false;
+  }
 }
 
 function String_Const_u8 vim_get_bot_string(){
